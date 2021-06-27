@@ -1,42 +1,25 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
-
-// const baseURL = 'http://localhost:8080/studentCourse';
+import React from "react";
+import { useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useHistory, useParams } from "react-router-dom";
+import  api  from '../../api/index';
 
 const ProfilePage = () => {
 
-  const [student, setStudent] = useState([]);
-
   const { id } = useParams();
+  const history = useHistory();
 
-  useEffect(() => {
-    getProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const getProfile = (id) => {
-    axios
-    .get(`http://localhost:8080/studentCourse/students/${id}`)
-      .then((response) => {
-        console.log(response.data);
-        setStudent(response.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-  const deleteProfile = (id) => {
-    axios
-      .delete(`http://localhost:8080/studentCourse/students/${id}`)
-      .then(() => {
-        getProfile();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  const fetchStudent = async () => await api.show(id);
+  const { status, data, error } = useQuery("students", fetchStudent);
 
+  const queryClient = useQueryClient();
+
+  switch (status) {
+    case "loading":
+      return <p>Loading...</p>;
+    case "error":
+      return <p>{error.message}</p>;
+    default:
   return (
     <div>
       <main className="container">
@@ -44,12 +27,11 @@ const ProfilePage = () => {
           <div className="col">
             {/* <h4>{musician.phone}</h4> */}
             <h4 style={{ marginTop: 20 }}>First Name</h4>
-            <h4>{student.firstName}</h4>
-            <h4>{student.lastName}</h4>
-            <h4>{student.email}</h4>
-            <h4>{student.course}</h4>
-            <h4>{student.courseId}</h4>
-            <h4>{student.studentGpa}</h4>
+            <h4>{data.lastName}</h4>
+            <h4>{data.email}</h4>
+            <h4>{data.course}</h4>
+            <h4>{data.courseId}</h4>
+            <h4>{data.gpa}</h4>
             
             <div className="mb-3">
             <label htmlFor="course" className="form-label" style={{ marginTop: 20 }}>
@@ -98,27 +80,28 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <Link to={`/Update/${student._id}`}>
+            {/* <Link to={`/update/${musician._id}`}> */}
             <button className="btn btn-primary" style={{ marginRight: 10, marginTop: 10 }}>
               update profile
             </button>
-            </Link>
-            <Link to={"/"}>
+            {/* </Link> */}
+            {/* <Link to={"/home"}> */}
             <button
               className="btn btn-primary" style={{ marginRight: 10, marginTop: 10 }}
-                onClick={() => {
-                  deleteProfile(student._id);
-                }}
+              //   onClick={() => {
+              //     deleteProfile(musician._id);
+              //   }}
               // eslint-disable-next-line
             >
               delete profile
             </button>
-            </Link>
+            {/* </Link> */}
           </div>
         </div>
       </main>
     </div>
   );
+}
 };
 
 export default ProfilePage;

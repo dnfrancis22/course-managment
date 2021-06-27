@@ -19,7 +19,7 @@ function App() {
         <Header />
           <Route exact path="/" component={Login} />
           <Route exact path="/Create" component={Create} />
-          <Route exact path="/Profile/:id" component={Profile} />
+          <Route exact path="/Profile" component={Profile} />
           <Route exact path="/Results" component={Results} />
           <Route exact path="/Update" component={Update} />
         </Router>

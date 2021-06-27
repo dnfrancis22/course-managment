@@ -1,14 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-// import { add } from '../../api';
-// import { useMutation, useQueryClient } from 'react-query';
+import React, { useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import  api  from '../../api/index';
+import { useMutation, useQueryClient } from 'react-query';
 
-
-// const baseURL = 'http://localhost:8080/studentCourse';
-
-
-const Form = ({ buttonText, handleFormSubmit }) => {
+const Form = () => {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -16,52 +11,30 @@ const Form = ({ buttonText, handleFormSubmit }) => {
   const [course, setCourse] = useState("");
   const [courseId, setCourseId] = useState("");
   const [gpa, setGpa] = useState("");
+  
+  const history = useHistory();
+
   const { id } = useParams();
 
-  useEffect(() => {
-    console.log(id);
-    if (id) {
-      axios
-        .get(`http://localhost:8080/studentCourse/students/${id}`)
-        .then((response) => {
-          console.log(response.data);
-          const { firstName, lastName, email, course, courseId, gpa } = response.data;
-          setFirstName(firstName);
-          setLastName(lastName);
-          setEmail(email);
-          setCourse(course);
-          setCourseId(courseId);
-          setGpa(gpa);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  }, [id]);
+  const qc = useQueryClient();
 
-  // const qc = useQueryClient();
+  const mutation = useMutation(newStudent => api.add(newStudent, "students"), {
+    onSuccess: () => {
+      qc.invalidateQueries('students');
+      qc.refetchQueries("students").then(() => history.push("/Profile"));
+    },
+  });
 
-  // const mutation = useMutation(newStudent => add(newStudent, "students"), {
-  //   onSuccess: () => {
-  //     qc.invalidateQueries('students');
-  //   },
-  // });
+  function handleSubmit(event) {
+    event.preventDefault();
 
-  // function handleSubmit(event) {
-  //   event.preventDefault();
-
-  //   mutation.mutate({ firstName, lastName, email, course, courseId, gpa });
-  //   event.target.reset();
-  // }
+    mutation.mutate({ firstName, lastName, email, course, courseId, gpa });
+    event.target.reset();
+  }
   return (
     <>
-      <form onSubmit={(e) => {
-          handleFormSubmit(
-            e,
-            { firstName, lastName, email, course, courseId, gpa },
-            id
-          );
-        }}
+      <form onSubmit={handleSubmit}
+      
       >
         <div className="mb-3">
         <label htmlFor="firstName" className="form-label"> 
@@ -159,7 +132,7 @@ const Form = ({ buttonText, handleFormSubmit }) => {
           />
         </div>
         <button type="submit" className="btn btn-primary">
-        {buttonText}
+          Submit
         </button>
       </form>
     </>
